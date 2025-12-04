@@ -1,26 +1,26 @@
-import { Shield, Users, TrendingUp, Wrench } from 'lucide-react'
+import { Shield, Users, TrendingUp, Wrench, ShieldCheck, Signpost, ShowerHead, Wheat } from 'lucide-react'
 import React from 'react'
 
 
 const services = [
     {
-      icon: Shield,
-      title: "Señalización Vial",
+      icon: Signpost,
+      title: "Señalización Vertical",
       description: "Implementación de señalética vertical y horizontal cumpliendo normativas vigentes."
     },
     {
-      icon: Wrench,
-      title: "Mantenimiento",
+      icon: ShieldCheck,
+      title: "Defensas Viales",
       description: "Servicios de mantenimiento preventivo y correctivo de infraestructura vial."
     },
     {
-      icon: TrendingUp,
-      title: "Consultoría",
+      icon: ShowerHead,
+      title: "Drenajes",
       description: "Asesoramiento técnico especializado en proyectos de seguridad vial."
     },
     {
-      icon: Users,
-      title: "Capacitación",
+      icon: Wheat,
+      title: "Agro",
       description: "Programas de formación en seguridad vial para empresas y organizaciones."
     }
   ]
@@ -31,12 +31,12 @@ export const ProductsSection = () => {
         <section className="py-24 bg-gray-50">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
-                    <span className="text-amber-600 font-semibold text-sm uppercase tracking-wider">Nuestros Servicios</span>
+                    <span className="text-amber-600 font-semibold text-sm uppercase tracking-wider">Nuestros Productos</span>
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-3 mb-4">
                         Soluciones Profesionales
                     </h2>
                     <p className="text-gray-600 max-w-2xl mx-auto">
-                        Ofrecemos una amplia gama de servicios especializados en seguridad e infraestructura vial.
+                        Ofrecemos una amplia gama de productos especializados en seguridad e infraestructura vial.
                     </p>
                 </div>
 

@@ -19,7 +19,7 @@ export const CONTACT_INFO = [
   {
     icon: Clock,
     title: "Horario de Atención",
-    lines: ["Lunes a Viernes: 8:00 - 17:00", "Sábados: 8:00 - 12:00"],
+    lines: ["Lunes a Viernes: 7:00 - 17:00"],
   },
 ] as const
 

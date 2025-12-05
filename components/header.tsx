@@ -2,8 +2,6 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 export function Header() {
@@ -39,22 +37,26 @@ export function Header() {
           <Link href="/" className="text-2xl font-bold transition-all duration-500">
             <Image
               src="/brand/LOGO_SERV.png"
-              alt="MetalForge"
-              width={scrolled ? 70 : 100}
-              height={scrolled ? 70 : 100}
+              alt="Servicio Vial"
+              width={scrolled ? 70 : 120}
+              height={scrolled ? 70 : 120}
               className="transition-all duration-500"
             />
           </Link>
           
-          { /* TODO: Add mobile menu */ }
+          { /* TODO: Menu mobile */ }
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-6">
             {navigation.map((item) => (
-              <Link key={item.name} href={item.href} className={`text-md transition-colors  ${
-                scrolled 
-                  ? "text-gray-700 hover:text-gray-900 text-sm" 
-                  : "text-black hover:text-foreground"
-              }`}>
+              <Link 
+                key={item.name} 
+                href={item.href} 
+                className={`relative text-md transition-colors duration-300 py-2 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-[2px] after:w-0 after:bg-red-600 after:transition-all after:duration-300 hover:after:w-full ${
+                  scrolled 
+                    ? "text-gray-700 hover:text-red-600 text-sm" 
+                    : "text-black hover:text-red-600"
+                }`}
+              >
                 {item.name}
               </Link>
             ))}

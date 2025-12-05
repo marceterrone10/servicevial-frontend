@@ -8,12 +8,10 @@ import { ContactSection } from "@/components/home/ContactSection"
 export default function HomePage() {
   return (
     <>
-      <Header />
       <Hero />
       <StatsSection />
       <ProductsSection />
       <ContactSection />
-      <Footer />
     </>
   )
 }

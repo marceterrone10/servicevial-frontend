@@ -20,12 +20,8 @@ export const Hero = () => {
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 Soluciones Integrales en
-                <span className="block text-amber-400">Señalización Vial</span>
+                <span className="block">Señalización Vial</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                Protegemos vidas a través de infraestructura vial de calidad. 
-                Más de una década de experiencia nos respalda.
-              </p>
             </div>
           </div>
         </section >

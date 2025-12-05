@@ -16,12 +16,12 @@ const services = [
     {
       icon: ShowerHead,
       title: "Drenajes",
-      description: "Asesoramiento técnico especializado en proyectos de seguridad vial."
+      description: "Instalación de drenajes para evacuar aguas pluviales y evitar inundaciones."
     },
     {
       icon: Wheat,
       title: "Agro",
-      description: "Programas de formación en seguridad vial para empresas y organizaciones."
+      description: "Agroductos para el sector agropecuario."
     }
   ]
 

@@ -33,5 +33,5 @@ export const INITIAL_FORM_DATA = {
 }
 
 export const API_ENDPOINT = "http://localhost:3300/api/consults"
-export const API_ENDPOINT_CONTACT = "https://servicevial-backend.onrender.com" //produccion
+export const API_ENDPOINT_CONTACT = "https://servicevial-backend.onrender.com/api/consults" //produccion
 

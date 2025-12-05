@@ -11,6 +11,16 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Mail, Phone, MapPin, Clock, Send, Building2, MessageSquare } from "lucide-react"
 import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
+
+interface FormErrors {
+  nombre?: string
+  email?: string
+  telefono?: string
+  compania?: string
+  asunto?: string
+  mensaje?: string
+}
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -22,26 +32,246 @@ export default function ContactPage() {
     mensaje: "",
   })
 
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
+
+  // Validation functions
+  const validateNombre = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "El nombre es requerido"
+    }
+    if (value.trim().length < 2) {
+      return "El nombre debe tener al menos 2 caracteres"
+    }
+    if (value.trim().length > 100) {
+      return "El nombre no puede exceder 100 caracteres"
+    }
+    if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(value.trim())) {
+      return "El nombre solo puede contener letras y espacios"
+    }
+    return undefined
+  }
+
+  const validateEmail = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "El email es requerido"
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(value.trim())) {
+      return "Por favor ingresa un email válido"
+    }
+    return undefined
+  }
+
+  const validateTelefono = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "El teléfono es requerido"
+    }
+    if (value.trim().length > 20) {
+      return "El teléfono no puede exceder 20 caracteres"
+    }
+    // Allow various phone formats: +54 11 4000-0000, 11-4000-0000, (11) 4000-0000, etc.
+    const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/
+    if (!phoneRegex.test(value.trim().replace(/\s/g, ""))) {
+      return "Por favor ingresa un teléfono válido"
+    }
+    return undefined
+  }
+
+  const validateCompania = (value: string): string | undefined => {
+    if (value.trim() && value.trim().length < 2) {
+      return "El nombre de la compañía debe tener al menos 2 caracteres"
+    }
+    if (value.trim().length > 100) {
+      return "El nombre de la compañía no puede exceder 100 caracteres"
+    }
+    return undefined
+  }
+
+  const validateAsunto = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "El asunto es requerido"
+    }
+    if (value.trim().length < 3) {
+      return "El asunto debe tener al menos 3 caracteres"
+    }
+    if (value.trim().length > 200) {
+      return "El asunto no puede exceder 200 caracteres"
+    }
+    return undefined
+  }
+
+  const validateMensaje = (value: string): string | undefined => {
+    if (!value.trim()) {
+      return "El mensaje es requerido"
+    }
+    if (value.trim().length < 10) {
+      return "El mensaje debe tener al menos 10 caracteres"
+    }
+    if (value.trim().length > 2000) {
+      return "El mensaje no puede exceder 2000 caracteres"
+    }
+    return undefined
+  }
+
+  const validateField = (name: string, value: string): string | undefined => {
+    switch (name) {
+      case "nombre":
+        return validateNombre(value)
+      case "email":
+        return validateEmail(value)
+      case "telefono":
+        return validateTelefono(value)
+      case "compania":
+        return validateCompania(value)
+      case "asunto":
+        return validateAsunto(value)
+      case "mensaje":
+        return validateMensaje(value)
+      default:
+        return undefined
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    newErrors.nombre = validateNombre(formData.nombre)
+    newErrors.email = validateEmail(formData.email)
+    newErrors.telefono = validateTelefono(formData.telefono)
+    newErrors.compania = validateCompania(formData.compania)
+    newErrors.asunto = validateAsunto(formData.asunto)
+    newErrors.mensaje = validateMensaje(formData.mensaje)
+
+    setErrors(newErrors)
+    return !Object.values(newErrors).some((error) => error !== undefined)
+  }
+
+  const isFormValid = (): boolean => {
+    const tempErrors: FormErrors = {}
+    tempErrors.nombre = validateNombre(formData.nombre)
+    tempErrors.email = validateEmail(formData.email)
+    tempErrors.telefono = validateTelefono(formData.telefono)
+    tempErrors.compania = validateCompania(formData.compania)
+    tempErrors.asunto = validateAsunto(formData.asunto)
+    tempErrors.mensaje = validateMensaje(formData.mensaje)
+    
+    return !Object.values(tempErrors).some((error) => error !== undefined)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Mark all fields as touched
+    setTouched({
+      nombre: true,
+      email: true,
+      telefono: true,
+      compania: true,
+      asunto: true,
+      mensaje: true,
+    })
+
+    // Validate form
+    if (!validateForm()) {
+      return
+    }
+
     setIsSubmitting(true)
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log("Form submitted:", formData)
-    setIsSubmitting(false)
-    // Reset form
-    setFormData({ nombre: "", email: "", telefono: "", compania: "", asunto: "", mensaje: "" })
+    
+    try {
+      // Transform form data to match backend DTO (Spanish to English field names)
+      const requestData = {
+        name: formData.nombre,
+        email: formData.email,
+        phone: formData.telefono || undefined,
+        company: formData.compania || undefined,
+        subject: formData.asunto,
+        message: formData.mensaje,
+      }
+
+      const response = await fetch("http://localhost:3300/api/consults", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Error al enviar el formulario" }))
+        
+        // Handle validation errors from class-validator (array of messages)
+        let errorMessage = "Error al enviar el formulario"
+        if (errorData.message) {
+          if (Array.isArray(errorData.message)) {
+            // Join multiple validation errors
+            errorMessage = errorData.message.join(". ")
+          } else {
+            errorMessage = errorData.message
+          }
+        } else if (errorData.error) {
+          errorMessage = errorData.error
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+      
+      // Show success message
+      toast({
+        title: "¡Mensaje enviado!",
+        description: "Tu consulta ha sido enviada correctamente. Te responderemos a la brevedad.",
+        variant: "default",
+      })
+
+      // Reset form
+      setFormData({ nombre: "", email: "", telefono: "", compania: "", asunto: "", mensaje: "" })
+      setErrors({})
+      setTouched({})
+    } catch (error) {
+      // Show error message
+      toast({
+        title: "Error al enviar",
+        description: error instanceof Error ? error.message : "Ocurrió un error al enviar tu mensaje. Por favor, intenta nuevamente.",
+        variant: "destructive",
+      })
+      console.error("Error submitting form:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    
+    // Validate field in real-time if it has been touched
+    if (touched[name]) {
+      const error = validateField(name, value)
+      setErrors((prev) => ({ ...prev, [name]: error }))
+    } else {
+      // Clear error when user starts typing in untouched field
+      if (errors[name as keyof FormErrors]) {
+        setErrors((prev) => ({ ...prev, [name]: undefined }))
+      }
+    }
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setTouched((prev) => ({ ...prev, [name]: true }))
+    
+    // Validate field on blur
+    const error = validateField(name, value)
+    setErrors((prev) => ({ ...prev, [name]: error }))
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       {/* Main Contact Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 pt-12">
@@ -126,7 +356,7 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="nombre" className="text-sm font-medium">
+                      <Label htmlFor="nombre" className={`text-sm font-medium ${errors.nombre && touched.nombre ? "text-destructive" : ""}`}>
                         Nombre <span className="text-accent">*</span>
                       </Label>
                       <Input
@@ -134,14 +364,19 @@ export default function ContactPage() {
                         name="nombre"
                         value={formData.nombre}
                         onChange={handleChange}
-                        required
+                        onBlur={handleBlur}
                         placeholder="Tu nombre completo"
-                        className="h-11 transition-all focus:ring-2 focus:ring-accent/20"
+                        className={`h-11 transition-all focus:ring-2 focus:ring-accent/20 ${
+                          errors.nombre && touched.nombre ? "border-destructive focus:ring-destructive/20" : ""
+                        }`}
                       />
+                      {errors.nombre && touched.nombre && (
+                        <p className="text-sm text-destructive mt-1">{errors.nombre}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">
+                      <Label htmlFor="email" className={`text-sm font-medium ${errors.email && touched.email ? "text-destructive" : ""}`}>
                         Email <span className="text-accent">*</span>
                       </Label>
                       <Input
@@ -150,16 +385,21 @@ export default function ContactPage() {
                         type="email"
                         value={formData.email}
                         onChange={handleChange}
-                        required
+                        onBlur={handleBlur}
                         placeholder="tu@email.com"
-                        className="h-11 transition-all focus:ring-2 focus:ring-accent/20"
+                        className={`h-11 transition-all focus:ring-2 focus:ring-accent/20 ${
+                          errors.email && touched.email ? "border-destructive focus:ring-destructive/20" : ""
+                        }`}
                       />
+                      {errors.email && touched.email && (
+                        <p className="text-sm text-destructive mt-1">{errors.email}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="compania" className="text-sm font-medium flex items-center gap-2">
+                      <Label htmlFor="compania" className={`text-sm font-medium flex items-center gap-2 ${errors.compania && touched.compania ? "text-destructive" : ""}`}>
                         <Building2 className="h-4 w-4 text-muted-foreground" />
                         Compañía
                       </Label>
@@ -168,14 +408,20 @@ export default function ContactPage() {
                         name="compania"
                         value={formData.compania}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         placeholder="Nombre de tu empresa"
-                        className="h-11 transition-all focus:ring-2 focus:ring-accent/20"
+                        className={`h-11 transition-all focus:ring-2 focus:ring-accent/20 ${
+                          errors.compania && touched.compania ? "border-destructive focus:ring-destructive/20" : ""
+                        }`}
                       />
+                      {errors.compania && touched.compania && (
+                        <p className="text-sm text-destructive mt-1">{errors.compania}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="telefono" className="text-sm font-medium">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <Label htmlFor="telefono" className={`text-sm font-medium ${errors.telefono && touched.telefono ? "text-destructive" : ""}`}>
+                        <Phone className="h-4 w-4 text-muted-foreground inline mr-2" />
                         Teléfono <span className="text-accent">*</span>
                       </Label>
                       <Input
@@ -183,15 +429,20 @@ export default function ContactPage() {
                         name="telefono"
                         value={formData.telefono}
                         onChange={handleChange}
-                        required
+                        onBlur={handleBlur}
                         placeholder="+54 11 4000-0000"
-                        className="h-11 transition-all focus:ring-2 focus:ring-accent/20"
+                        className={`h-11 transition-all focus:ring-2 focus:ring-accent/20 ${
+                          errors.telefono && touched.telefono ? "border-destructive focus:ring-destructive/20" : ""
+                        }`}
                       />
+                      {errors.telefono && touched.telefono && (
+                        <p className="text-sm text-destructive mt-1">{errors.telefono}</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                      <Label htmlFor="asunto" className="text-sm font-medium">
+                      <Label htmlFor="asunto" className={`text-sm font-medium ${errors.asunto && touched.asunto ? "text-destructive" : ""}`}>
                         Asunto <span className="text-accent">*</span>
                       </Label>
                       <Input
@@ -199,14 +450,19 @@ export default function ContactPage() {
                         name="asunto"
                         value={formData.asunto}
                         onChange={handleChange}
-                        required
+                        onBlur={handleBlur}
                         placeholder="¿En qué podemos ayudarte?"
-                        className="h-11 transition-all focus:ring-2 focus:ring-accent/20"
+                        className={`h-11 transition-all focus:ring-2 focus:ring-accent/20 ${
+                          errors.asunto && touched.asunto ? "border-destructive focus:ring-destructive/20" : ""
+                        }`}
                       />
+                      {errors.asunto && touched.asunto && (
+                        <p className="text-sm text-destructive mt-1">{errors.asunto}</p>
+                      )}
                     </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="mensaje" className="text-sm font-medium">
+                    <Label htmlFor="mensaje" className={`text-sm font-medium ${errors.mensaje && touched.mensaje ? "text-destructive" : ""}`}>
                       Mensaje <span className="text-accent">*</span>
                     </Label>
                     <Textarea
@@ -214,18 +470,22 @@ export default function ContactPage() {
                       name="mensaje"
                       value={formData.mensaje}
                       onChange={handleChange}
-                      required
+                      onBlur={handleBlur}
                       rows={5}
                       placeholder="Contanos sobre tu proyecto o consulta..."
-                      className="resize-none transition-all focus:ring-2 focus:ring-accent/20"
+                      className={`resize-none transition-all focus:ring-2 focus:ring-accent/20 ${
+                        errors.mensaje && touched.mensaje ? "border-destructive focus:ring-destructive/20" : ""
+                      }`}
                     />
+                    {errors.mensaje && touched.mensaje && (
+                      <p className="text-sm text-destructive mt-1">{errors.mensaje}</p>
+                    )}
                   </div>
-
                   <Button 
                     type="submit" 
                     size="lg" 
                     className="w-full md:w-auto px-8 h-12 text-base font-semibold gap-2 group"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isFormValid()}
                   >
                     {isSubmitting ? (
                       <>
@@ -296,8 +556,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   )
 }

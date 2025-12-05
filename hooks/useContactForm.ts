@@ -12,7 +12,7 @@ import {
   validateAsunto,
   validateMensaje 
 } from "@/lib/validations/contact"
-import { INITIAL_FORM_DATA, API_ENDPOINT } from "@/lib/constants/contact"
+import { INITIAL_FORM_DATA, API_ENDPOINT, API_ENDPOINT_CONTACT } from "@/lib/constants/contact"
 
 export type FormData = typeof INITIAL_FORM_DATA
 
@@ -70,7 +70,7 @@ export function useContactForm() {
         message: formData.mensaje,
       }
 
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch(API_ENDPOINT_CONTACT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
